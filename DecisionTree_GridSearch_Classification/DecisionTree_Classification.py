@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split,GridSearchCV
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import confusion_matrix, classification_report, accuracy_score
+from sklearn.metrics import confusion_matrix, classification_report, accuracy_score,roc_auc_score
 
 dataset = pd.read_csv("../data/Social_Network_Ads.csv")
 dataset = pd.get_dummies(dataset, drop_first=True)
@@ -21,11 +21,11 @@ param_grid = {
     'min_impurity_decrease': [0.0, 0.01, 0.1],  # Threshold for splitting nodes
 }
 
-grid = GridSearchCV(estimator=DecisionTreeClassifier(), param_grid=param_grid, cv=5, scoring='accuracy', n_jobs=-1,verbose=1)
+grid = GridSearchCV(estimator=DecisionTreeClassifier(), param_grid=param_grid, cv=5, refit=True,scoring='accuracy', n_jobs=-1,verbose=1)
 grid.fit(x_train,y_train)
 print(grid.best_params_)
-best_model = grid.best_estimator_
-y_predict = best_model.predict(x_test)
+#best_model = grid.best_estimator_
+y_predict = grid.predict(x_test)
 
 matrix = confusion_matrix(y_test, y_predict)
 print(matrix)
@@ -33,4 +33,5 @@ clf_report = classification_report(y_test, y_predict)
 print(clf_report)
 acc_score = accuracy_score(y_test, y_predict)
 print(acc_score)
-
+roc_score = roc_auc_score(y_test, grid.predict_proba(x_test)[:, 1])
+print(roc_score)
